@@ -1,7 +1,29 @@
+// @flow
 const axios = require('axios')
 const changeCase = require('change-case')
 const fs = require('fs-extra')
 const yaml = require('js-yaml')
+
+type Image = {
+  name: string,
+  src: string
+}
+
+type WikiResponse = {
+  data: {
+    continue?: {
+      aicontinue?: string
+    },
+    query: {
+      allimages: Array<{
+        name: string,
+        url: string,
+        width: number,
+        height: number
+      }>
+    }
+  }
+}
 
 const generateYaml = (emojis) => {
   const yamlData = yaml.safeDump({
@@ -17,7 +39,7 @@ const generateYaml = (emojis) => {
     ))
 }
 
-const getPage = (images = [], aicontinue) => {
+const getPage = (images: Array<Image> = [], aicontinue?: string) => {
   console.log('Fetching page with offset:', aicontinue)
 
   return axios.get('https://wiki.factorio.com/api.php', {
@@ -29,7 +51,7 @@ const getPage = (images = [], aicontinue) => {
       format: 'json',
       list: 'allimages'
     }
-  }).then(({ data }) => {
+  }).then(({ data }: WikiResponse) => {
     const nextImages = images.concat(
       data.query.allimages
         .filter(({ width, height }) => (
